@@ -1,6 +1,65 @@
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
+# define a class  for 2D Kalman filter.
+class KalmanFilter2D:
+    def __init__(self, dt, process_var, measurement_var):
+        """
+        dt: time step (float)
+        process_var: process variance (float)
+        measurement_var: measurement variance (float)
+        """
+        # State vector: [x, y, vx, vy]
+        self.x = np.zeros((4, 1))
+
+        # State transition matrix (constant velocity model)
+        self.F = np.array([
+            [1, 0, dt, 0],
+            [0, 1, 0, dt],
+            [0, 0, 1,  0],
+            [0, 0, 0,  1]
+        ])
+
+        # Observation matrix (we can observe x, y only)
+        self.H = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0]
+        ])
+
+        # Measurement noise covariance
+        self.R = measurement_var * np.eye(2)
+
+        # Process noise covariance
+        q = process_var
+        self.Q = q * np.array([
+            [dt**4/4, 0,       dt**3/2, 0],
+            [0,       dt**4/4, 0,       dt**3/2],
+            [dt**3/2, 0,       dt**2,   0],
+            [0,       dt**3/2, 0,       dt**2]
+        ])
+
+        # Estimate error covariance
+        self.P = np.eye(4)
+
+    def predict(self):
+        # Predict state and error covariance
+        self.x = self.F @ self.x
+        self.P = self.F @ self.P @ self.F.T + self.Q
+        return self.x[:2].flatten()
+
+    def update(self, z):
+        """
+        z: measurement [x, y]
+        """
+        z = np.array(z).reshape(2, 1)
+        y = z - self.H @ self.x
+        S = self.H @ self.P @ self.H.T + self.R
+        K = self.P @ self.H.T @ np.linalg.inv(S)
+        self.x = self.x + K @ y
+        self.P = (np.eye(4) - K @ self.H) @ self.P
+        return self.x[:2].flatten()
+
+# Set up the tracking scheme.
 class Tracker:
     def __init__(self, max_lost=5, iou_threshold=30):
         self.tracks = {}  # track_id -> dict with kalman, hit count, last position
