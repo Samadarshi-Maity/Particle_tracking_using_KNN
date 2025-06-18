@@ -1,14 +1,15 @@
+# import the necessary Python packages
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
 # define a class  for 2D Kalman filter.
 class KalmanFilter2D:
     def __init__(self, dt, process_var, measurement_var):
-        """
+        '''
         dt: time step (float)
         process_var: process variance (float)
         measurement_var: measurement variance (float)
-        """
+        '''
         # State vector: [x, y, vx, vy]
         self.x = np.zeros((4, 1))
 
@@ -48,9 +49,9 @@ class KalmanFilter2D:
         return self.x[:2].flatten()
 
     def update(self, z):
-        """
+        '''
         z: measurement [x, y]
-        """
+        '''
         z = np.array(z).reshape(2, 1)
         y = z - self.H @ self.x
         S = self.H @ self.P @ self.H.T + self.R
