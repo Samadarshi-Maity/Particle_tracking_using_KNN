@@ -62,7 +62,7 @@ def vel_spins(frame1, frame2):
     # compute  ''' Displacement''' for gnerating the velocity vectors
     frame2['dR'] = np.sqrt(frame2['dX']**2 + frame2['dY']**2)
     
-    # return the master table (updated frame 2) with the linking data 
+    # return the master table (joined to frame 2) with the linking data 
     return frame2 
 
 
